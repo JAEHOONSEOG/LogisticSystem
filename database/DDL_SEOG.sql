@@ -477,6 +477,7 @@ CREATE TABLE TSN_Cargo(
 	Createdate DATETIME,
 	State VARCHAR(255),
 	CompanyCode VARCHAR(255),
+	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
 	PRIMARY KEY(Idx),
 	FOREIGN KEY(ProductIndex) REFERENCES TSN_Product(Idx),
@@ -493,6 +494,7 @@ CREATE TABLE TSN_CargoSub(
 	Creater VARCHAR(255),
 	CreateDate DATETIME,
 	CompanyCode VARCHAR(255),
+	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
 	PRIMARY KEY(Idx),
 	FOREIGN KEY(Idx) REFERENCES TSN_Cargo(Idx),
@@ -511,10 +513,8 @@ CREATE TABLE MST_Cargo(
 --Insert into MST_Cargo
 INSERT INTO MST_Cargo (CODE, NAME) VALUES('01', N'商品入庫');
 INSERT INTO MST_Cargo (CODE, NAME) VALUES('02', N'商品出庫');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('03', N'貨物運送中');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('04', N'貨物運送済');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('05', N'保管中');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('06', N'取り下げ');
+INSERT INTO MST_Cargo (CODE, NAME) VALUES('04', N'保管中');
+INSERT INTO MST_Cargo (CODE, NAME) VALUES('05', N'取り下げ');
 
 CREATE TABLE MST_Area(
 	CODE VARCHAR(255) NOT NULL,
@@ -545,6 +545,7 @@ CREATE TABLE TSN_Transport (
 	Creater VARCHAR(255),
 	CreateDate DATETIME,
 	CompanyCode VARCHAR(255)
+	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
 	PRIMARY KEY(Idx),
 	FOREIGN KEY(ProductIndex) REFERENCES TSN_Cargo(ProductIndex),
@@ -560,11 +561,11 @@ CREATE TABLE MST_Transport(
 )
 
 --Insert into MST_Transport
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('01', N'運送待機');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('02', N'運送中');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('03', N'運送済');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('04', N'運送遅延');
-INSERT INTO MST_Cargo (CODE, NAME) VALUES('05', N'運送中断');
+INSERT INTO MST_Transport (CODE, NAME) VALUES('01', N'運送待機');
+INSERT INTO MST_Transport (CODE, NAME) VALUES('02', N'運送中');
+INSERT INTO MST_Transport (CODE, NAME) VALUES('03', N'運送済');
+INSERT INTO MST_Transport (CODE, NAME) VALUES('04', N'運送遅延');
+INSERT INTO MST_Transport (CODE, NAME) VALUES('05', N'運送中断');
 
 --Which is the key?? -> CodeKey
 CREATE TABLE MST_CodeMaster(
@@ -629,6 +630,7 @@ INSERT INTO MST_Connect (CODE, NAME) VALUES('02', N'非接続');
 
 CREATE TABLE TSN_DeliveryTable(
 	Idx INT NOT NULL AUTO_INCREMENT,
+	TransportState VARCHAR(255),
 	OrderCompany VARCHAR(255),
 	OrderAddress VARCHAR(255),
 	OrderSaveDate DateTime,
@@ -640,16 +642,17 @@ CREATE TABLE TSN_DeliveryTable(
 	CompanyCode VARCHAR(255),
 	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
-	PRIMARY KEY(Idx)
+	PRIMARY KEY(Idx),
+	FOREIGN KEY(TransportState) REFERENCES TSN_Transport (State),
 	FOREIGN KEY(CompanyCode) REFERENCES MST_CodeMaster (CodeKey),
 	FOREIGN KEY(State) REFERENCES MST_Delivery(CODE)
 )
 
 CREATE TABLE TSN_DeliveryTableSub(
 	Idx INT NOT NULL AUTO_INCREMENT,
-    DeliveryKey INT,
+    ProductIndex INT NOT NULL,
+	DeliveryKey INT,
     Number INT,
-    ProductIndex INT,
     ProductSpec NVARCHAR(255),
     ProductType NVARCHAR(255),
     ProductAmount DECIMAL,
@@ -663,6 +666,7 @@ CREATE TABLE TSN_DeliveryTableSub(
 	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
 	PRIMARY KEY(Idx),
+	FOREIGN KEY(ProductIndex) REFERENCES TSN_Cargo (ProductIndex),
 	FOREIGN KEY(CompanyCode) REFERENCES MST_CodeMaster (CodeKey),
 	FOREIGN KEY(State) REFERENCES TSN_DeliveryTable(State)
 )
@@ -676,11 +680,16 @@ CREATE TABLE MST_DeliveryTable(
 )
 
 --Insert into MST_Delivery
-INSERT INTO MST_Delivery (CODE, NAME) VALUES('01', N'集荷中');
-INSERT INTO MST_Delivery (CODE, NAME) VALUES('02', N'集荷済');
-INSERT INTO MST_Delivery (CODE, NAME) VALUES('03', N'配送中');
+-- When TransportState is 01 or 02.
+INSERT INTO MST_Delivery (CODE, NAME) VALUES('01', N'配送待機');
+-- When TransportState is 03.　
+INSERT INTO MST_Delivery (CODE, NAME) VALUES('02', N'配送中');  
 INSERT INTO MST_Delivery (CODE, NAME) VALUES('04', N'配送済');
-INSERT INTO MST_Delivery (CODE, NAME) VALUES('05', N'配送遅延');
+-- When TransportState is 04 or Delivery is delayed.
+INSERT INTO MST_Delivery (CODE, NAME) VALUES('03', N'配送遅延');
+-- When TransportState is 05
+INSERT INTO MST_Delivery (CODE, NAME) VALUES('05', N'配送中断');
+-- When Delivery is Canceled by OrderCompany or InOrderCompany.
 INSERT INTO MST_Delivery (CODE, NAME) VALUES('06', N'取り下げ');
 
 
