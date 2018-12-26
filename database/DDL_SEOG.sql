@@ -388,6 +388,7 @@ CREATE TABLE TSN_BillSub(
 	State VARCHAR(255),
 	Hits DECIMAL,
 	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
+	
 	PRIMARY KEY(Idx),
 	FOREIGN KEY(Idx) REFERENCES TSN_Bill(Idx),
 	FOREIGN KEY(InvoiceType) REFERENCES MST_InvoiceType(CODE),
@@ -585,6 +586,7 @@ CREATE TABLE TSN_Comment(
 	Creater VARCHAR(255),
 	Createdate VARCHAR(255),
 	State VARCHAR(255),
+	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
 	PRIMARY KEY(Idx),
 	FOREIGN KEY(BoardIdx) REFERENCES TSN_Board(Idx),
@@ -667,6 +669,7 @@ CREATE TABLE TSN_DeliveryTableSub(
 	
 	PRIMARY KEY(Idx),
 	FOREIGN KEY(ProductIndex) REFERENCES TSN_Cargo (ProductIndex),
+	FOREIGN KEY(ProductAmount) REFERENCES TSN_OrderTableProduct (ProductAmount),
 	FOREIGN KEY(CompanyCode) REFERENCES MST_CodeMaster (CodeKey),
 	FOREIGN KEY(State) REFERENCES TSN_DeliveryTable(State)
 )
@@ -774,6 +777,8 @@ CREATE TABLE TSN_ProductFlow(
 	IsDeleted BOOLEAN DEFAULT FALSE NOT NULL,
 	
 	PRIMARY KEY(idx),
+	FOREIGN KEY(ProductIndex) REFERENCES TSN_Product (Idx),
+	FOREIGN KEY(ProductAmount) REFERENCES TSN_DeliveryTableSub (ProductAmount),
 	FOREIGN KEY(CompanyCode) REFERENCES MST_CodeMaster (CodeKey),
 	FOREIGN KEY(State) REFERENCES MST_State(CODE)
 )
